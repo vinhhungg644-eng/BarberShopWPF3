@@ -7,411 +7,719 @@
         WindowStartupLocation="CenterScreen"
         Background="{StaticResource ContentBg}">
 
-	<Grid>
-		<Grid.ColumnDefinitions>
-			<ColumnDefinition Width="220"/>
-			<ColumnDefinition Width="*"/>
-		</Grid.ColumnDefinitions>
+    <Window.Resources>
+        <!-- Nav button style dùng trong CustomerView -->
+        <Style x:Key="CustNavBtn" TargetType="Button">
+            <Setter Property="Background"                Value="Transparent"/>
+            <Setter Property="Foreground"                Value="{StaticResource TextMuted}"/>
+            <Setter Property="FontSize"                  Value="13"/>
+            <Setter Property="Padding"                   Value="20,13"/>
+            <Setter Property="HorizontalContentAlignment" Value="Left"/>
+            <Setter Property="BorderThickness"           Value="0"/>
+            <Setter Property="Cursor"                    Value="Hand"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border x:Name="Bd" Background="{TemplateBinding Background}"
+                                CornerRadius="8" Margin="8,2" Padding="{TemplateBinding Padding}">
+                            <ContentPresenter HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"
+                                              VerticalAlignment="Center"/>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="Bd" Property="Background" Value="#1E2A4A"/>
+                                <Setter Property="Foreground" Value="{StaticResource TextLight}"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
 
-		<Border Grid.Column="0" Background="{StaticResource SidebarBg}">
-			<DockPanel LastChildFill="True">
+        <Style x:Key="CustNavBtnActive" TargetType="Button" BasedOn="{StaticResource CustNavBtn}">
+            <Setter Property="Background" Value="{StaticResource Primary}"/>
+            <Setter Property="Foreground" Value="White"/>
+            <Style.Triggers>
+                <Trigger Property="IsMouseOver" Value="True">
+                    <Setter Property="Background" Value="{StaticResource PrimaryHover}"/>
+                </Trigger>
+            </Style.Triggers>
+        </Style>
+    </Window.Resources>
 
-				<StackPanel DockPanel.Dock="Top" Margin="18,26,18,10">
-					<StackPanel Orientation="Horizontal">
-						<Border Width="40" Height="40" CornerRadius="10" Background="{StaticResource Primary}">
-							<TextBlock Text="✂" FontSize="20" HorizontalAlignment="Center" VerticalAlignment="Center" Foreground="White"/>
-						</Border>
-						<StackPanel Margin="10,0,0,0" VerticalAlignment="Center">
-							<TextBlock Text="BarberShop" FontSize="15" FontWeight="Bold" Foreground="{StaticResource TextLight}"/>
-							<TextBlock Text="Khách hàng" FontSize="11" Foreground="{StaticResource TextMuted}"/>
-						</StackPanel>
-					</StackPanel>
-					<Rectangle Height="1" Fill="{StaticResource BorderSidebar}" Margin="0,18,0,0"/>
-				</StackPanel>
+    <Grid>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="220"/>
+            <ColumnDefinition Width="*"/>
+        </Grid.ColumnDefinitions>
 
-				<StackPanel DockPanel.Dock="Top" Margin="18,6,18,16" HorizontalAlignment="Center">
-					<Border Width="60" Height="60" CornerRadius="30" Background="{StaticResource Primary}" HorizontalAlignment="Center">
-						<TextBlock Text="👤" FontSize="28" HorizontalAlignment="Center" VerticalAlignment="Center"/>
-					</Border>
-					<TextBlock Text="{Binding CurrentCustomer.FullName}" FontSize="13" FontWeight="SemiBold" Foreground="{StaticResource TextLight}" HorizontalAlignment="Center" TextTrimming="CharacterEllipsis" Margin="0,10,0,6"/>
-					<Border CornerRadius="12" Padding="12,4" HorizontalAlignment="Center">
-						<Border.Background>
-							<LinearGradientBrush StartPoint="0,0" EndPoint="1,0">
-								<GradientStop Color="#6C63FF" Offset="0"/>
-								<GradientStop Color="#9C8FFF" Offset="1"/>
-							</LinearGradientBrush>
-						</Border.Background>
-						<StackPanel Orientation="Horizontal">
-							<TextBlock Text="⭐ " FontSize="11" Foreground="White"/>
-							<TextBlock Foreground="White" FontSize="11" FontWeight="SemiBold">
-								<TextBlock.Text>
-									<MultiBinding StringFormat="{}{0} điểm">
-										<Binding Path="Points"/>
-									</MultiBinding>
-								</TextBlock.Text>
-							</TextBlock>
-						</StackPanel>
-					</Border>
-					<TextBlock Text="{Binding Tier}" FontSize="11" Foreground="{StaticResource TextMuted}" HorizontalAlignment="Center" Margin="0,4,0,0"/>
-					<Rectangle Height="1" Fill="{StaticResource BorderSidebar}" Margin="0,14,0,0"/>
-				</StackPanel>
+        <!-- ═══ SIDEBAR ═══ -->
+        <Border Grid.Column="0" Background="{StaticResource SidebarBg}">
+            <DockPanel LastChildFill="True">
 
-				<StackPanel DockPanel.Dock="Top">
-					<TextBlock Text="MENU" FontSize="10" FontWeight="Bold" Foreground="#3D4D6A" Margin="28,0,0,8"/>
-					<Button Content="🏠   Trang chủ" Style="{Binding ShowHome, Converter={StaticResource BoolToNavStyle}}" Command="{Binding NavHomeCmd}"/>
-					<Button Content="📅   Đặt lịch mới" Style="{Binding ShowBook, Converter={StaticResource BoolToNavStyle}}" Command="{Binding NavBookCmd}"/>
-					<Button Content="📋   Lịch sử hẹn" Style="{Binding ShowHist, Converter={StaticResource BoolToNavStyle}}" Command="{Binding NavHistCmd}"/>
-				</StackPanel>
+                <StackPanel DockPanel.Dock="Top" Margin="18,26,18,10">
+                    <StackPanel Orientation="Horizontal">
+                        <Border Width="40" Height="40" CornerRadius="10" Background="{StaticResource Primary}">
+                            <TextBlock Text="✂" FontSize="20" HorizontalAlignment="Center"
+                                       VerticalAlignment="Center" Foreground="White"/>
+                        </Border>
+                        <StackPanel Margin="10,0,0,0" VerticalAlignment="Center">
+                            <TextBlock Text="BarberShop" FontSize="15" FontWeight="Bold"
+                                       Foreground="{StaticResource TextLight}"/>
+                            <TextBlock Text="Khách hàng" FontSize="11"
+                                       Foreground="{StaticResource TextMuted}"/>
+                        </StackPanel>
+                    </StackPanel>
+                    <Rectangle Height="1" Fill="{StaticResource BorderSidebar}" Margin="0,18,0,0"/>
+                </StackPanel>
 
-				<StackPanel DockPanel.Dock="Bottom" Margin="14,0,14,18">
-					<Rectangle Height="1" Fill="{StaticResource BorderSidebar}" Margin="0,0,0,10"/>
-					<Button Content="⏻   Đăng xuất" Style="{StaticResource NavButton}" Foreground="{StaticResource ErrorRed}" Command="{Binding LogoutCmd}"/>
-				</StackPanel>
+                <!-- User info -->
+                <StackPanel DockPanel.Dock="Top" Margin="18,6,18,16" HorizontalAlignment="Center">
+                    <Border Width="60" Height="60" CornerRadius="30" Background="{StaticResource Primary}"
+                            HorizontalAlignment="Center">
+                        <TextBlock Text="👤" FontSize="28" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                    </Border>
+                    <TextBlock Text="{Binding CurrentCustomer.FullName}" FontSize="13" FontWeight="SemiBold"
+                               Foreground="{StaticResource TextLight}" HorizontalAlignment="Center"
+                               TextTrimming="CharacterEllipsis" Margin="0,10,0,6"/>
+                    <Border CornerRadius="12" Padding="12,4" HorizontalAlignment="Center">
+                        <Border.Background>
+                            <LinearGradientBrush StartPoint="0,0" EndPoint="1,0">
+                                <GradientStop Color="#6C63FF" Offset="0"/>
+                                <GradientStop Color="#9C8FFF" Offset="1"/>
+                            </LinearGradientBrush>
+                        </Border.Background>
+                        <StackPanel Orientation="Horizontal">
+                            <TextBlock Text="⭐ " FontSize="11" Foreground="White"/>
+                            <TextBlock Foreground="White" FontSize="11" FontWeight="SemiBold">
+                                <TextBlock.Text>
+                                    <MultiBinding StringFormat="{}{0} điểm">
+                                        <Binding Path="Points"/>
+                                    </MultiBinding>
+                                </TextBlock.Text>
+                            </TextBlock>
+                        </StackPanel>
+                    </Border>
+                    <TextBlock Text="{Binding Tier}" FontSize="11" Foreground="{StaticResource TextMuted}"
+                               HorizontalAlignment="Center" Margin="0,4,0,0"/>
+                    <Rectangle Height="1" Fill="{StaticResource BorderSidebar}" Margin="0,14,0,0"/>
+                </StackPanel>
 
-				<Grid/>
-			</DockPanel>
-		</Border>
+                <!-- Nav buttons: dùng Style tĩnh + DataTrigger để đổi màu active -->
+                <StackPanel DockPanel.Dock="Top">
+                    <TextBlock Text="MENU" FontSize="10" FontWeight="Bold"
+                               Foreground="#3D4D6A" Margin="28,0,0,8"/>
 
-		<Grid Grid.Column="1">
+                    <Button Command="{Binding NavHomeCmd}">
+                        <Button.Style>
+                            <Style TargetType="Button" BasedOn="{StaticResource CustNavBtn}">
+                                <Style.Triggers>
+                                    <DataTrigger Binding="{Binding ShowHome}" Value="True">
+                                        <Setter Property="Background" Value="{StaticResource Primary}"/>
+                                        <Setter Property="Foreground" Value="White"/>
+                                    </DataTrigger>
+                                </Style.Triggers>
+                            </Style>
+                        </Button.Style>
+                        <TextBlock Text="🏠   Trang chủ"/>
+                    </Button>
 
-			<Border Height="64" VerticalAlignment="Top" Panel.ZIndex="10" Background="White" Padding="24,0" BorderBrush="{StaticResource BorderLight}" BorderThickness="0,0,0,1">
-				<Grid>
-					<StackPanel Orientation="Horizontal" VerticalAlignment="Center">
-						<TextBlock FontSize="20" FontWeight="Bold" Foreground="{StaticResource TextDark}">
-							<TextBlock.Text>
-								<MultiBinding StringFormat="Xin chào, {0}!">
-									<Binding Path="CurrentCustomer.FullName"/>
-								</MultiBinding>
-							</TextBlock.Text>
-						</TextBlock>
-					</StackPanel>
-					<TextBlock Text="{Binding Status}" FontSize="12" HorizontalAlignment="Right" VerticalAlignment="Center" Foreground="{StaticResource Primary}" Visibility="{Binding Status, Converter={StaticResource StrToVis}}"/>
-				</Grid>
-			</Border>
+                    <Button Command="{Binding NavBookCmd}">
+                        <Button.Style>
+                            <Style TargetType="Button" BasedOn="{StaticResource CustNavBtn}">
+                                <Style.Triggers>
+                                    <DataTrigger Binding="{Binding ShowBook}" Value="True">
+                                        <Setter Property="Background" Value="{StaticResource Primary}"/>
+                                        <Setter Property="Foreground" Value="White"/>
+                                    </DataTrigger>
+                                </Style.Triggers>
+                            </Style>
+                        </Button.Style>
+                        <TextBlock Text="📅   Đặt lịch mới"/>
+                    </Button>
 
-			<ScrollViewer Margin="0,64,0,0" Visibility="{Binding ShowHome, Converter={StaticResource BoolToVis}}">
-				<StackPanel Margin="24,22,24,24">
+                    <Button Command="{Binding NavHistCmd}">
+                        <Button.Style>
+                            <Style TargetType="Button" BasedOn="{StaticResource CustNavBtn}">
+                                <Style.Triggers>
+                                    <DataTrigger Binding="{Binding ShowHist}" Value="True">
+                                        <Setter Property="Background" Value="{StaticResource Primary}"/>
+                                        <Setter Property="Foreground" Value="White"/>
+                                    </DataTrigger>
+                                </Style.Triggers>
+                            </Style>
+                        </Button.Style>
+                        <TextBlock Text="📋   Lịch sử hẹn"/>
+                    </Button>
 
-					<Border CornerRadius="16" Padding="28,22" Margin="0,0,0,24">
-						<Border.Background>
-							<LinearGradientBrush StartPoint="0,0" EndPoint="1,1">
-								<GradientStop Color="#6C63FF" Offset="0"/>
-								<GradientStop Color="#4834D4" Offset="1"/>
-							</LinearGradientBrush>
-						</Border.Background>
-						<Grid>
-							<StackPanel>
-								<TextBlock FontSize="22" FontWeight="Bold" Foreground="White">
+                    <Button Command="{Binding NavVouchersCmd}">
+                        <Button.Style>
+                            <Style TargetType="Button" BasedOn="{StaticResource CustNavBtn}">
+                                <Style.Triggers>
+                                    <DataTrigger Binding="{Binding ShowVouchers}" Value="True">
+                                        <Setter Property="Background" Value="{StaticResource Primary}"/>
+                                        <Setter Property="Foreground" Value="White"/>
+                                    </DataTrigger>
+                                </Style.Triggers>
+                            </Style>
+                        </Button.Style>
+                        <TextBlock Text="🎟️   Voucher"/>
+                    </Button>
+                </StackPanel>
+
+                <StackPanel DockPanel.Dock="Bottom" Margin="14,0,14,18">
+                    <Rectangle Height="1" Fill="{StaticResource BorderSidebar}" Margin="0,0,0,10"/>
+                    <Button Content="⏻   Đăng xuất" Style="{StaticResource NavButton}"
+                            Foreground="{StaticResource ErrorRed}" Command="{Binding LogoutCmd}"/>
+                </StackPanel>
+                <Grid/>
+            </DockPanel>
+        </Border>
+
+        <!-- ═══ CONTENT ═══ -->
+        <Grid Grid.Column="1">
+
+            <!-- Top bar -->
+            <Border Height="64" VerticalAlignment="Top" Panel.ZIndex="10" Background="White"
+                    Padding="24,0" BorderBrush="{StaticResource BorderLight}" BorderThickness="0,0,0,1">
+                <Grid>
+                    <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                        <TextBlock FontSize="20" FontWeight="Bold" Foreground="{StaticResource TextDark}">
+                            <TextBlock.Text>
+                                <MultiBinding StringFormat="Xin chào, {0}!">
+                                    <Binding Path="CurrentCustomer.FullName"/>
+                                </MultiBinding>
+                            </TextBlock.Text>
+                        </TextBlock>
+                    </StackPanel>
+                    <TextBlock Text="{Binding Status}" FontSize="12" HorizontalAlignment="Right"
+                               VerticalAlignment="Center" Foreground="{StaticResource Primary}"
+                               Visibility="{Binding Status, Converter={StaticResource StrToVis}}"/>
+                </Grid>
+            </Border>
+
+            <!-- ══ HOME ══ -->
+            <ScrollViewer Margin="0,64,0,0"
+                          Visibility="{Binding ShowHome, Converter={StaticResource BoolToVis}}">
+                <StackPanel Margin="24,22,24,24">
+                    <Border CornerRadius="16" Padding="28,22" Margin="0,0,0,24">
+                        <Border.Background>
+                            <LinearGradientBrush StartPoint="0,0" EndPoint="1,1">
+                                <GradientStop Color="#6C63FF" Offset="0"/>
+                                <GradientStop Color="#4834D4" Offset="1"/>
+                            </LinearGradientBrush>
+                        </Border.Background>
+                        <Grid>
+                            <StackPanel>
+                                <TextBlock FontSize="22" FontWeight="Bold" Foreground="White">
                                     <Run Text="Chào mừng, "/>
                                     <Run Text="{Binding CurrentCustomer.FullName}"/>
                                     <Run Text="! 👋"/>
-								</TextBlock>
-								<TextBlock Text="Hãy đặt lịch để có trải nghiệm tuyệt vời hôm nay" Foreground="#C5C0FF" FontSize="13" Margin="0,6,0,18"/>
-								<Button Content="📅   Đặt lịch ngay" Height="38" Padding="18,0" HorizontalAlignment="Left" Background="White" Foreground="{StaticResource Primary}" FontWeight="SemiBold" FontSize="13" BorderThickness="0" Cursor="Hand" Command="{Binding NavBookCmd}">
-									<Button.Template>
-										<ControlTemplate TargetType="Button">
-											<Border Background="{TemplateBinding Background}" CornerRadius="8" Padding="{TemplateBinding Padding}">
-												<ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
-											</Border>
-										</ControlTemplate>
-									</Button.Template>
-								</Button>
-							</StackPanel>
-							<TextBlock Text="✂" FontSize="90" Opacity="0.12" HorizontalAlignment="Right" VerticalAlignment="Center" Foreground="White" Margin="0,0,24,0"/>
-						</Grid>
-					</Border>
+                                </TextBlock>
+                                <TextBlock Text="Hãy đặt lịch để có trải nghiệm tuyệt vời hôm nay"
+                                           Foreground="#C5C0FF" FontSize="13" Margin="0,6,0,18"/>
+                                <Button Content="📅   Đặt lịch ngay" Height="38" Padding="18,0"
+                                        HorizontalAlignment="Left" Background="White"
+                                        Foreground="{StaticResource Primary}" FontWeight="SemiBold"
+                                        FontSize="13" BorderThickness="0" Cursor="Hand"
+                                        Command="{Binding NavBookCmd}">
+                                    <Button.Template>
+                                        <ControlTemplate TargetType="Button">
+                                            <Border Background="{TemplateBinding Background}"
+                                                    CornerRadius="8" Padding="{TemplateBinding Padding}">
+                                                <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                            </Border>
+                                        </ControlTemplate>
+                                    </Button.Template>
+                                </Button>
+                            </StackPanel>
+                            <TextBlock Text="✂" FontSize="90" Opacity="0.12" HorizontalAlignment="Right"
+                                       VerticalAlignment="Center" Foreground="White" Margin="0,0,24,0"/>
+                        </Grid>
+                    </Border>
 
-					<TextBlock Text="Lịch hẹn sắp tới" FontSize="15" FontWeight="SemiBold" Foreground="{StaticResource TextDark}" Margin="0,0,0,14"/>
+                    <TextBlock Text="Lịch hẹn sắp tới" FontSize="15" FontWeight="SemiBold"
+                               Foreground="{StaticResource TextDark}" Margin="0,0,0,14"/>
 
-					<Border Style="{StaticResource Card}" Padding="40" Visibility="{Binding UpcomingCount, Converter={StaticResource ZeroToVis}}">
-						<StackPanel HorizontalAlignment="Center">
-							<TextBlock Text="📭" FontSize="52" HorizontalAlignment="Center"/>
-							<TextBlock Text="Bạn chưa có lịch hẹn nào sắp tới" FontSize="14" Foreground="{StaticResource TextGray}" HorizontalAlignment="Center" Margin="0,10,0,0"/>
-						</StackPanel>
-					</Border>
+                    <Border Style="{StaticResource Card}" Padding="40"
+                            Visibility="{Binding UpcomingCount, Converter={StaticResource ZeroToVis}}">
+                        <StackPanel HorizontalAlignment="Center">
+                            <TextBlock Text="📭" FontSize="52" HorizontalAlignment="Center"/>
+                            <TextBlock Text="Bạn chưa có lịch hẹn nào sắp tới" FontSize="14"
+                                       Foreground="{StaticResource TextGray}"
+                                       HorizontalAlignment="Center" Margin="0,10,0,0"/>
+                        </StackPanel>
+                    </Border>
 
-					<ItemsControl ItemsSource="{Binding Upcoming}">
-						<ItemsControl.ItemTemplate>
-							<DataTemplate>
-								<Border Background="White" CornerRadius="12" Padding="0" Margin="0,0,0,12">
-									<Border.Effect>
-										<DropShadowEffect BlurRadius="14" Opacity="0.06" ShadowDepth="2" Direction="270"/>
-									</Border.Effect>
-									<Grid>
-										<Border Width="5" HorizontalAlignment="Left" CornerRadius="12,0,0,12">
-											<Border.Background>
-												<LinearGradientBrush StartPoint="0,0" EndPoint="0,1">
-													<GradientStop Color="#6C63FF" Offset="0"/>
-													<GradientStop Color="#4834D4" Offset="1"/>
-												</LinearGradientBrush>
-											</Border.Background>
-										</Border>
-										<Grid Margin="22,16,18,16">
-											<Grid.ColumnDefinitions>
-												<ColumnDefinition Width="*"/>
-												<ColumnDefinition Width="Auto"/>
-											</Grid.ColumnDefinitions>
-											<StackPanel>
-												<TextBlock Text="{Binding Service.ServiceName, FallbackValue='(Dịch vụ)'}" FontSize="14" FontWeight="SemiBold" Foreground="{StaticResource TextDark}"/>
-												<StackPanel Orientation="Horizontal" Margin="0,6,0,0">
-													<TextBlock Text="👤  " FontSize="12" Foreground="{StaticResource TextGray}"/>
-													<TextBlock Text="{Binding Barber.FullName, FallbackValue='—'}" FontSize="12" Foreground="{StaticResource TextGray}"/>
-													<TextBlock Text="    •    " FontSize="12" Foreground="#D1D5DB"/>
-													<TextBlock Text="🕐  " FontSize="12" Foreground="{StaticResource TextGray}"/>
-													<TextBlock Text="{Binding AppointmentTime, StringFormat='dd/MM/yyyy HH:mm'}" FontSize="12" Foreground="{StaticResource TextGray}"/>
-												</StackPanel>
-											</StackPanel>
-											<Border Grid.Column="1" CornerRadius="20" Padding="12,5" Background="{Binding Status, Converter={StaticResource StatusToBg}}" VerticalAlignment="Center">
-												<TextBlock Text="{Binding Status}" FontSize="11" FontWeight="SemiBold" Foreground="{Binding Status, Converter={StaticResource StatusToColor}}"/>
-											</Border>
-										</Grid>
-									</Grid>
-								</Border>
-							</DataTemplate>
-						</ItemsControl.ItemTemplate>
-					</ItemsControl>
-				</StackPanel>
-			</ScrollViewer>
+                    <ItemsControl ItemsSource="{Binding Upcoming}">
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate>
+                                <Border Background="White" CornerRadius="12" Padding="0" Margin="0,0,0,12">
+                                    <Border.Effect>
+                                        <DropShadowEffect BlurRadius="14" Opacity="0.06"
+                                                          ShadowDepth="2" Direction="270"/>
+                                    </Border.Effect>
+                                    <Grid>
+                                        <Border Width="5" HorizontalAlignment="Left" CornerRadius="12,0,0,12">
+                                            <Border.Background>
+                                                <LinearGradientBrush StartPoint="0,0" EndPoint="0,1">
+                                                    <GradientStop Color="#6C63FF" Offset="0"/>
+                                                    <GradientStop Color="#4834D4" Offset="1"/>
+                                                </LinearGradientBrush>
+                                            </Border.Background>
+                                        </Border>
+                                        <Grid Margin="22,16,18,16">
+                                            <Grid.ColumnDefinitions>
+                                                <ColumnDefinition Width="*"/>
+                                                <ColumnDefinition Width="Auto"/>
+                                            </Grid.ColumnDefinitions>
+                                            <StackPanel>
+                                                <TextBlock Text="{Binding Service.ServiceName, FallbackValue='(Dịch vụ)'}"
+                                                           FontSize="14" FontWeight="SemiBold"
+                                                           Foreground="{StaticResource TextDark}"/>
+                                                <StackPanel Orientation="Horizontal" Margin="0,6,0,0">
+                                                    <TextBlock Text="👤  " FontSize="12" Foreground="{StaticResource TextGray}"/>
+                                                    <TextBlock Text="{Binding Barber.FullName, FallbackValue='—'}"
+                                                               FontSize="12" Foreground="{StaticResource TextGray}"/>
+                                                    <TextBlock Text="    •    " FontSize="12" Foreground="#D1D5DB"/>
+                                                    <TextBlock Text="🕐  " FontSize="12" Foreground="{StaticResource TextGray}"/>
+                                                    <TextBlock Text="{Binding AppointmentTime, StringFormat='dd/MM/yyyy HH:mm'}"
+                                                               FontSize="12" Foreground="{StaticResource TextGray}"/>
+                                                </StackPanel>
+                                            </StackPanel>
+                                            <Border Grid.Column="1" CornerRadius="20" Padding="12,5"
+                                                    Background="{Binding Status, Converter={StaticResource StatusToBg}}"
+                                                    VerticalAlignment="Center">
+                                                <TextBlock Text="{Binding Status}" FontSize="11" FontWeight="SemiBold"
+                                                           Foreground="{Binding Status, Converter={StaticResource StatusToColor}}"/>
+                                            </Border>
+                                        </Grid>
+                                    </Grid>
+                                </Border>
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                    </ItemsControl>
+                </StackPanel>
+            </ScrollViewer>
 
-			<ScrollViewer Margin="0,64,0,0" Visibility="{Binding ShowBook, Converter={StaticResource BoolToVis}}">
-				<StackPanel Margin="24,22,24,24">
+            <!-- ══ BOOKING ══ -->
+            <ScrollViewer Margin="0,64,0,0"
+                          Visibility="{Binding ShowBook, Converter={StaticResource BoolToVis}}">
+                <StackPanel Margin="24,22,24,24">
+                    <TextBlock Text="Đặt lịch hẹn mới" FontSize="15" FontWeight="SemiBold"
+                               Foreground="{StaticResource TextDark}" Margin="0,0,0,20"/>
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="18"/>
+                            <ColumnDefinition Width="*"/>
+                        </Grid.ColumnDefinitions>
 
-					<TextBlock Text="Đặt lịch hẹn mới" FontSize="15" FontWeight="SemiBold" Foreground="{StaticResource TextDark}" Margin="0,0,0,20"/>
+                        <!-- Dịch vụ -->
+                        <Border Grid.Column="0" Style="{StaticResource Card}">
+                            <StackPanel>
+                                <StackPanel Orientation="Horizontal" Margin="0,0,0,16">
+                                    <Border Width="28" Height="28" CornerRadius="8"
+                                            Background="{StaticResource Primary}">
+                                        <TextBlock Text="1" FontSize="13" FontWeight="Bold"
+                                                   Foreground="White" HorizontalAlignment="Center"
+                                                   VerticalAlignment="Center"/>
+                                    </Border>
+                                    <TextBlock Text="  Chọn dịch vụ" FontSize="14" FontWeight="SemiBold"
+                                               VerticalAlignment="Center"/>
+                                </StackPanel>
+                                <ListBox ItemsSource="{Binding Services}" SelectedItem="{Binding SelService}"
+                                         BorderThickness="0" MaxHeight="240"
+                                         ScrollViewer.VerticalScrollBarVisibility="Auto"
+                                         Background="Transparent">
+                                    <ListBox.ItemContainerStyle>
+                                        <Style TargetType="ListBoxItem">
+                                            <Setter Property="Padding" Value="0"/>
+                                            <Setter Property="Margin" Value="0,2"/>
+                                            <Setter Property="Template">
+                                                <Setter.Value>
+                                                    <ControlTemplate TargetType="ListBoxItem">
+                                                        <Border x:Name="Bd" Background="Transparent"
+                                                                BorderThickness="1" BorderBrush="Transparent"
+                                                                CornerRadius="8" Padding="12,10" Cursor="Hand">
+                                                            <ContentPresenter/>
+                                                        </Border>
+                                                        <ControlTemplate.Triggers>
+                                                            <Trigger Property="IsSelected" Value="True">
+                                                                <Setter TargetName="Bd" Property="Background" Value="#FFF3E0"/>
+                                                                <Setter TargetName="Bd" Property="BorderBrush" Value="#FFB74D"/>
+                                                            </Trigger>
+                                                            <Trigger Property="IsMouseOver" Value="True">
+                                                                <Setter TargetName="Bd" Property="Background" Value="#F5F7FF"/>
+                                                            </Trigger>
+                                                        </ControlTemplate.Triggers>
+                                                    </ControlTemplate>
+                                                </Setter.Value>
+                                            </Setter>
+                                        </Style>
+                                    </ListBox.ItemContainerStyle>
+                                    <ListBox.ItemTemplate>
+                                        <DataTemplate>
+                                            <Grid>
+                                                <Grid.ColumnDefinitions>
+                                                    <ColumnDefinition Width="*"/>
+                                                    <ColumnDefinition Width="Auto"/>
+                                                </Grid.ColumnDefinitions>
+                                                <StackPanel>
+                                                    <TextBlock Text="{Binding ServiceName}" FontSize="13"
+                                                               FontWeight="SemiBold"
+                                                               Foreground="{StaticResource TextDark}"/>
+                                                    <TextBlock FontSize="11"
+                                                               Foreground="{StaticResource TextGray}"
+                                                               Margin="0,3,0,0">
+                                                        <Run Text="⏱ "/>
+                                                        <Run Text="{Binding DurationMinutes}"/>
+                                                        <Run Text=" phút"/>
+                                                    </TextBlock>
+                                                </StackPanel>
+                                                <StackPanel Grid.Column="1" VerticalAlignment="Center">
+                                                    <TextBlock FontSize="14" FontWeight="Bold"
+                                                               Foreground="{StaticResource Primary}">
+                                                        <Run Text="{Binding Price, StringFormat={}{0:N0}}"/>
+                                                        <Run Text="đ"/>
+                                                    </TextBlock>
+                                                </StackPanel>
+                                            </Grid>
+                                        </DataTemplate>
+                                    </ListBox.ItemTemplate>
+                                </ListBox>
+                            </StackPanel>
+                        </Border>
 
-					<Grid>
-						<Grid.ColumnDefinitions>
-							<ColumnDefinition Width="*"/>
-							<ColumnDefinition Width="18"/>
-							<ColumnDefinition Width="*"/>
-						</Grid.ColumnDefinitions>
+                        <!-- Thợ + số lượng -->
+                        <Border Grid.Column="2" Style="{StaticResource Card}">
+                            <StackPanel>
+                                <StackPanel Orientation="Horizontal" Margin="0,0,0,15">
+                                    <TextBlock Text="Số lượng người đặt:" VerticalAlignment="Center"
+                                               FontWeight="SemiBold" Foreground="{StaticResource TextDark}"
+                                               Margin="0,0,10,0"/>
+                                    <ComboBox ItemsSource="{Binding Quantities}"
+                                              SelectedItem="{Binding Quantity}" Width="60" Padding="10,5"/>
+                                </StackPanel>
+                                <StackPanel Orientation="Horizontal" Margin="0,0,0,16">
+                                    <Border Width="28" Height="28" CornerRadius="8"
+                                            Background="{StaticResource Green}">
+                                        <TextBlock Text="2" FontSize="13" FontWeight="Bold"
+                                                   Foreground="White" HorizontalAlignment="Center"
+                                                   VerticalAlignment="Center"/>
+                                    </Border>
+                                    <TextBlock Text="  Chọn thợ cắt tóc" FontSize="14"
+                                               FontWeight="SemiBold" VerticalAlignment="Center"/>
+                                </StackPanel>
 
-						<Border Grid.Column="0" Style="{StaticResource Card}">
-							<StackPanel>
-								<StackPanel Orientation="Horizontal" Margin="0,0,0,16">
-									<Border Width="28" Height="28" CornerRadius="8" Background="{StaticResource Primary}">
-										<TextBlock Text="1" FontSize="13" FontWeight="Bold" Foreground="White" HorizontalAlignment="Center" VerticalAlignment="Center"/>
-									</Border>
-									<TextBlock Text="  Chọn dịch vụ" FontSize="14" FontWeight="SemiBold" VerticalAlignment="Center"/>
-								</StackPanel>
-
-								<ListBox ItemsSource="{Binding Services}" SelectedItem="{Binding SelService}" BorderThickness="0" MaxHeight="240" ScrollViewer.VerticalScrollBarVisibility="Auto" Background="Transparent">
-									<ListBox.ItemContainerStyle>
-										<Style TargetType="ListBoxItem">
-											<Setter Property="Padding" Value="0"/>
-											<Setter Property="Margin" Value="0,2"/>
-											<Setter Property="Template">
-												<Setter.Value>
-													<ControlTemplate TargetType="ListBoxItem">
-														<Border x:Name="Bd" Background="Transparent" BorderThickness="1" BorderBrush="Transparent" CornerRadius="8" Padding="12,10" Cursor="Hand">
-															<ContentPresenter/>
-														</Border>
-														<ControlTemplate.Triggers>
-															<Trigger Property="IsSelected" Value="True">
-																<Setter TargetName="Bd" Property="Background" Value="#FFF3E0"/>
-																<Setter TargetName="Bd" Property="BorderBrush" Value="#FFB74D"/>
-															</Trigger>
-															<Trigger Property="IsMouseOver" Value="True">
-																<Setter TargetName="Bd" Property="Background" Value="#F5F7FF"/>
-															</Trigger>
-														</ControlTemplate.Triggers>
-													</ControlTemplate>
-												</Setter.Value>
-											</Setter>
-										</Style>
-									</ListBox.ItemContainerStyle>
-									<ListBox.ItemTemplate>
-										<DataTemplate>
-											<Grid>
-												<Grid.ColumnDefinitions>
-													<ColumnDefinition Width="*"/>
-													<ColumnDefinition Width="Auto"/>
-												</Grid.ColumnDefinitions>
-												<StackPanel>
-													<TextBlock Text="{Binding ServiceName}" FontSize="13" FontWeight="SemiBold" Foreground="{StaticResource TextDark}"/>
-													<TextBlock FontSize="11" Foreground="{StaticResource TextGray}" Margin="0,3,0,0">
-                                                        <Run Text="⏱ "/><Run Text="{Binding DurationMinutes}"/><Run Text=" phút"/>
-													</TextBlock>
-												</StackPanel>
-												<StackPanel Grid.Column="1" VerticalAlignment="Center">
-													<TextBlock FontSize="14" FontWeight="Bold" Foreground="{StaticResource Primary}">
-                                                        <Run Text="{Binding Price, StringFormat={}{0:N0}}"/><Run Text="đ"/>
-													</TextBlock>
-												</StackPanel>
-											</Grid>
-										</DataTemplate>
-									</ListBox.ItemTemplate>
-								</ListBox>
-							</StackPanel>
-						</Border>
-
-						<Border Grid.Column="2" Style="{StaticResource Card}">
-							<StackPanel>
-								<StackPanel Orientation="Horizontal" Margin="0,0,0,15">
-									<TextBlock Text="Số lượng người đặt:" VerticalAlignment="Center" FontWeight="SemiBold" Foreground="{StaticResource TextDark}" Margin="0,0,10,0"/>
-									<ComboBox ItemsSource="{Binding Quantities}" SelectedItem="{Binding Quantity}" Width="60" Padding="10,5"/>
-								</StackPanel>
-
-								<StackPanel Orientation="Horizontal" Margin="0,0,0,16">
-									<Border Width="28" Height="28" CornerRadius="8" Background="{StaticResource Green}">
-										<TextBlock Text="2" FontSize="13" FontWeight="Bold" Foreground="White" HorizontalAlignment="Center" VerticalAlignment="Center"/>
-									</Border>
-									<TextBlock Text="  Chọn thợ cắt tóc" FontSize="14" FontWeight="SemiBold" VerticalAlignment="Center"/>
-								</StackPanel>
-
-								<TextBlock Text="⚠ Bạn đặt cho nhiều người nên hệ thống sẽ xếp thợ linh hoạt. Vui lòng ghi chú nếu bạn có yêu cầu chọn thợ cụ thể." 
-                                           Foreground="#FF3D00" FontWeight="SemiBold" TextWrapping="Wrap" Margin="5" 
+                                <TextBlock Text="⚠ Bạn đặt cho nhiều người nên hệ thống sẽ xếp thợ linh hoạt."
+                                           Foreground="#FF3D00" FontWeight="SemiBold" TextWrapping="Wrap"
+                                           Margin="5"
                                            Visibility="{Binding IsMultiBooking, Converter={StaticResource BoolToVis}}"/>
 
-								<ScrollViewer MaxHeight="200" VerticalScrollBarVisibility="Auto" Visibility="{Binding IsSingleBooking, Converter={StaticResource BoolToVis}}">
-									<ListBox ItemsSource="{Binding Barbers}" SelectedItem="{Binding SelBarber}" BorderThickness="0" Background="Transparent">
-										<ListBox.ItemContainerStyle>
-											<Style TargetType="ListBoxItem">
-												<Setter Property="Padding" Value="0"/>
-												<Setter Property="Margin" Value="0,2"/>
-												<Setter Property="Template">
-													<Setter.Value>
-														<ControlTemplate TargetType="ListBoxItem">
-															<Border x:Name="Bd" Background="Transparent" CornerRadius="8" Padding="10,8" Cursor="Hand">
-																<ContentPresenter/>
-															</Border>
-															<ControlTemplate.Triggers>
-																<Trigger Property="IsSelected" Value="True">
-																	<Setter TargetName="Bd" Property="Background" Value="#E8F5E9"/>
-																</Trigger>
-																<Trigger Property="IsMouseOver" Value="True">
-																	<Setter TargetName="Bd" Property="Background" Value="#F1F8F1"/>
-																</Trigger>
-															</ControlTemplate.Triggers>
-														</ControlTemplate>
-													</Setter.Value>
-												</Setter>
-											</Style>
-										</ListBox.ItemContainerStyle>
-										<ListBox.ItemTemplate>
-											<DataTemplate>
-												<StackPanel Orientation="Horizontal">
-													<Border Width="42" Height="42" CornerRadius="21" Background="{StaticResource Primary}">
-														<TextBlock Text="✂" FontSize="20" HorizontalAlignment="Center" VerticalAlignment="Center" Foreground="White"/>
-													</Border>
-													<StackPanel Margin="12,0,0,0" VerticalAlignment="Center">
-														<TextBlock Text="{Binding FullName}" FontSize="13" FontWeight="SemiBold" Foreground="{StaticResource TextDark}"/>
+                                <ScrollViewer MaxHeight="200" VerticalScrollBarVisibility="Auto"
+                                              Visibility="{Binding IsSingleBooking, Converter={StaticResource BoolToVis}}">
+                                    <ListBox ItemsSource="{Binding Barbers}" SelectedItem="{Binding SelBarber}"
+                                             BorderThickness="0" Background="Transparent">
+                                        <ListBox.ItemContainerStyle>
+                                            <Style TargetType="ListBoxItem">
+                                                <Setter Property="Padding" Value="0"/>
+                                                <Setter Property="Margin" Value="0,2"/>
+                                                <Setter Property="Template">
+                                                    <Setter.Value>
+                                                        <ControlTemplate TargetType="ListBoxItem">
+                                                            <Border x:Name="Bd" Background="Transparent"
+                                                                    CornerRadius="8" Padding="10,8" Cursor="Hand">
+                                                                <ContentPresenter/>
+                                                            </Border>
+                                                            <ControlTemplate.Triggers>
+                                                                <Trigger Property="IsSelected" Value="True">
+                                                                    <Setter TargetName="Bd" Property="Background" Value="#E8F5E9"/>
+                                                                </Trigger>
+                                                                <Trigger Property="IsMouseOver" Value="True">
+                                                                    <Setter TargetName="Bd" Property="Background" Value="#F1F8F1"/>
+                                                                </Trigger>
+                                                            </ControlTemplate.Triggers>
+                                                        </ControlTemplate>
+                                                    </Setter.Value>
+                                                </Setter>
+                                            </Style>
+                                        </ListBox.ItemContainerStyle>
+                                        <ListBox.ItemTemplate>
+                                            <DataTemplate>
+                                                <StackPanel Orientation="Horizontal">
+                                                    <Border Width="42" Height="42" CornerRadius="21"
+                                                            Background="{StaticResource Primary}">
+                                                        <TextBlock Text="✂" FontSize="20"
+                                                                   HorizontalAlignment="Center"
+                                                                   VerticalAlignment="Center" Foreground="White"/>
+                                                    </Border>
+                                                    <StackPanel Margin="12,0,0,0" VerticalAlignment="Center">
+                                                        <TextBlock Text="{Binding FullName}" FontSize="13"
+                                                                   FontWeight="SemiBold"
+                                                                   Foreground="{StaticResource TextDark}"/>
+                                                        <TextBlock x:Name="txtStatus" Text="✅ Đang rảnh"
+                                                                   FontSize="11" Foreground="{StaticResource Green}"/>
+                                                    </StackPanel>
+                                                </StackPanel>
+                                                <DataTemplate.Triggers>
+                                                    <DataTrigger Binding="{Binding IsBusy}" Value="True">
+                                                        <Setter TargetName="txtStatus" Property="Text" Value="❌ Đang bận"/>
+                                                        <Setter TargetName="txtStatus" Property="Foreground" Value="#E53935"/>
+                                                    </DataTrigger>
+                                                </DataTemplate.Triggers>
+                                            </DataTemplate>
+                                        </ListBox.ItemTemplate>
+                                    </ListBox>
+                                </ScrollViewer>
+                            </StackPanel>
+                        </Border>
+                    </Grid>
 
-														<TextBlock x:Name="txtStatus" Text="✅ Đang rảnh" FontSize="11" Foreground="{StaticResource Green}"/>
-													</StackPanel>
-												</StackPanel>
+                    <!-- Ngày giờ + ghi chú + nút đặt -->
+                    <Border Style="{StaticResource Card}" Margin="0,16,0,0">
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="20"/>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="20"/>
+                                <ColumnDefinition Width="220"/>
+                            </Grid.ColumnDefinitions>
+                            <Grid Margin="0,10,0,0">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*"/>
+                                    <ColumnDefinition Width="*"/>
+                                </Grid.ColumnDefinitions>
+                                <StackPanel Grid.Column="0" Margin="0,0,10,0">
+                                    <TextBlock Text="CHỌN NGÀY" FontSize="10" FontWeight="Bold"
+                                               Foreground="{StaticResource TextMuted}" Margin="0,0,0,5"/>
+                                    <DatePicker SelectedDate="{Binding ApptDate}" Height="40"
+                                                VerticalContentAlignment="Center"/>
+                                </StackPanel>
+                                <StackPanel Grid.Column="1">
+                                    <TextBlock Text="CHỌN GIỜ" FontSize="10" FontWeight="Bold"
+                                               Foreground="{StaticResource TextMuted}" Margin="0,0,0,5"/>
+                                    <ComboBox ItemsSource="{Binding TimeSlots}" SelectedItem="{Binding SelectedTime}"
+                                              Height="40" VerticalContentAlignment="Center"/>
+                                </StackPanel>
+                            </Grid>
+                            <StackPanel Grid.Column="2">
+                                <StackPanel Orientation="Horizontal" Margin="0,0,0,12">
+                                    <Border Width="28" Height="28" CornerRadius="8"
+                                            Background="{StaticResource Blue}">
+                                        <TextBlock Text="4" FontSize="13" FontWeight="Bold"
+                                                   Foreground="White" HorizontalAlignment="Center"
+                                                   VerticalAlignment="Center"/>
+                                    </Border>
+                                    <TextBlock Text="  Ghi chú (tùy chọn)" FontSize="14"
+                                               FontWeight="SemiBold" VerticalAlignment="Center"/>
+                                </StackPanel>
+                                <TextBox Style="{StaticResource TxtBox}"
+                                         Text="{Binding Notes, UpdateSourceTrigger=PropertyChanged}"/>
+                            </StackPanel>
+                            <StackPanel Grid.Column="4" VerticalAlignment="Center">
+                                <Button Content="📅  XÁC NHẬN ĐẶT LỊCH"
+                                        Style="{StaticResource BtnPrimary}"
+                                        Height="46" FontSize="13" Command="{Binding BookCmd}"/>
+                            </StackPanel>
+                        </Grid>
+                    </Border>
+                </StackPanel>
+            </ScrollViewer>
 
-												<DataTemplate.Triggers>
-													<DataTrigger Binding="{Binding IsBusy}" Value="True">
-														<Setter TargetName="txtStatus" Property="Text" Value="❌ Đang bận"/>
-														<Setter TargetName="txtStatus" Property="Foreground" Value="#E53935"/>
-													</DataTrigger>
-												</DataTemplate.Triggers>
-											</DataTemplate>
-										</ListBox.ItemTemplate>
-									</ListBox>
-								</ScrollViewer>
-							</StackPanel>
-						</Border>
-					</Grid>
+            <!-- ══ HISTORY ══ -->
+            <Grid Margin="0,64,0,0"
+                  Visibility="{Binding ShowHist, Converter={StaticResource BoolToVis}}">
+                <Border Margin="24,22,24,22" Style="{StaticResource Card}" Padding="0">
+                    <Grid>
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="*"/>
+                        </Grid.RowDefinitions>
+                        <Border Padding="22,14" BorderBrush="{StaticResource BorderLight}"
+                                BorderThickness="0,0,0,1">
+                            <TextBlock Text="Lịch sử lịch hẹn" FontSize="14" FontWeight="SemiBold"/>
+                        </Border>
+                        <DataGrid Grid.Row="1" ItemsSource="{Binding AllAppts}">
+                            <DataGrid.Columns>
+                                <DataGridTextColumn Header="#"
+                                                    Binding="{Binding AppointmentId}" Width="60"/>
+                                <DataGridTextColumn Header="Dịch vụ"
+                                                    Binding="{Binding Service.ServiceName}" Width="*"/>
+                                <DataGridTextColumn Header="Thợ cắt"
+                                                    Binding="{Binding Barber.FullName}" Width="140"/>
+                                <DataGridTextColumn Header="Thời gian"
+                                                    Binding="{Binding AppointmentTime, StringFormat='dd/MM/yyyy HH:mm'}"
+                                                    Width="150"/>
+                                <DataGridTextColumn Header="Ghi chú"
+                                                    Binding="{Binding Notes}" Width="120"/>
+                                <DataGridTemplateColumn Header="Trạng thái" Width="150">
+                                    <DataGridTemplateColumn.CellTemplate>
+                                        <DataTemplate>
+                                            <Border CornerRadius="12" Padding="10,4" Margin="8,6"
+                                                    HorizontalAlignment="Left"
+                                                    Background="{Binding Status, Converter={StaticResource StatusToBg}}">
+                                                <TextBlock Text="{Binding Status}" FontSize="11"
+                                                           FontWeight="SemiBold"
+                                                           Foreground="{Binding Status, Converter={StaticResource StatusToColor}}"/>
+                                            </Border>
+                                        </DataTemplate>
+                                    </DataGridTemplateColumn.CellTemplate>
+                                </DataGridTemplateColumn>
+                                <DataGridTemplateColumn Header="Thao tác" Width="110">
+                                    <DataGridTemplateColumn.CellTemplate>
+                                        <DataTemplate>
+                                            <Button Content="Hủy Lịch" Height="30" Padding="10,0"
+                                                    FontSize="11" Margin="6,6"
+                                                    Command="{Binding DataContext.CancelCmd,
+                                                              RelativeSource={RelativeSource AncestorType=Window}}"
+                                                    CommandParameter="{Binding AppointmentId}">
+                                                <Button.Style>
+                                                    <Style TargetType="Button"
+                                                           BasedOn="{StaticResource BtnDanger}">
+                                                        <Style.Triggers>
+                                                            <DataTrigger Binding="{Binding Status}" Value="Đã xác nhận">
+                                                                <Setter Property="IsEnabled" Value="False"/>
+                                                            </DataTrigger>
+                                                            <DataTrigger Binding="{Binding Status}" Value="Hoàn thành">
+                                                                <Setter Property="IsEnabled" Value="False"/>
+                                                            </DataTrigger>
+                                                            <DataTrigger Binding="{Binding Status}" Value="Đã hủy">
+                                                                <Setter Property="IsEnabled" Value="False"/>
+                                                            </DataTrigger>
+                                                        </Style.Triggers>
+                                                    </Style>
+                                                </Button.Style>
+                                            </Button>
+                                        </DataTemplate>
+                                    </DataGridTemplateColumn.CellTemplate>
+                                </DataGridTemplateColumn>
+                            </DataGrid.Columns>
+                        </DataGrid>
+                    </Grid>
+                </Border>
+            </Grid>
 
-					<Border Style="{StaticResource Card}" Margin="0,16,0,0">
-						<Grid>
-							<Grid.ColumnDefinitions>
-								<ColumnDefinition Width="*"/>
-								<ColumnDefinition Width="20"/>
-								<ColumnDefinition Width="*"/>
-								<ColumnDefinition Width="20"/>
-								<ColumnDefinition Width="220"/>
-							</Grid.ColumnDefinitions>
+            <!-- ══ VOUCHERS ══ -->
+            <ScrollViewer Margin="0,64,0,0"
+                          Visibility="{Binding ShowVouchers, Converter={StaticResource BoolToVis}}">
+                <StackPanel Margin="24,22,24,24">
+                    <StackPanel Margin="0,0,0,24">
+                        <TextBlock Text="🎟️ Voucher đang có" FontSize="20" FontWeight="Bold"
+                                   Foreground="{StaticResource TextDark}"/>
+                        <TextBlock Text="Lưu lại mã và đọc cho lễ tân khi thanh toán tại quán."
+                                   FontSize="13" Foreground="{StaticResource TextGray}" Margin="0,4,0,0"/>
+                    </StackPanel>
 
-							<Grid Margin="0,10,0,0">
-								<Grid.ColumnDefinitions>
-									<ColumnDefinition Width="*"/>
-									<ColumnDefinition Width="*"/>
-								</Grid.ColumnDefinitions>
-								<StackPanel Grid.Column="0" Margin="0,0,10,0">
-									<TextBlock Text="CHỌN NGÀY" FontSize="10" FontWeight="Bold" Foreground="{StaticResource TextMuted}" Margin="0,0,0,5"/>
-									<DatePicker SelectedDate="{Binding ApptDate}" Height="40" VerticalContentAlignment="Center"/>
-								</StackPanel>
-								<StackPanel Grid.Column="1">
-									<TextBlock Text="CHỌN GIỜ" FontSize="10" FontWeight="Bold" Foreground="{StaticResource TextMuted}" Margin="0,0,0,5"/>
-									<ComboBox ItemsSource="{Binding TimeSlots}" SelectedItem="{Binding SelectedTime}" Height="40" VerticalContentAlignment="Center"/>
-								</StackPanel>
-							</Grid>
+                    <!-- Empty state -->
+                    <Border Style="{StaticResource Card}" Padding="50,40">
+                        <Border.Style>
+                            <Style TargetType="Border" BasedOn="{StaticResource Card}">
+                                <Setter Property="Visibility" Value="Collapsed"/>
+                                <Style.Triggers>
+                                    <DataTrigger Binding="{Binding Vouchers.Count}" Value="0">
+                                        <Setter Property="Visibility" Value="Visible"/>
+                                    </DataTrigger>
+                                </Style.Triggers>
+                            </Style>
+                        </Border.Style>
+                        <StackPanel HorizontalAlignment="Center">
+                            <TextBlock Text="🎫" FontSize="56" HorizontalAlignment="Center"/>
+                            <TextBlock Text="Hiện không có voucher nào đang khuyến mãi"
+                                       FontSize="14" Foreground="{StaticResource TextGray}"
+                                       HorizontalAlignment="Center" Margin="0,12,0,0"/>
+                        </StackPanel>
+                    </Border>
 
-							<StackPanel Grid.Column="2">
-								<StackPanel Orientation="Horizontal" Margin="0,0,0,12">
-									<Border Width="28" Height="28" CornerRadius="8" Background="{StaticResource Blue}">
-										<TextBlock Text="4" FontSize="13" FontWeight="Bold" Foreground="White" HorizontalAlignment="Center" VerticalAlignment="Center"/>
-									</Border>
-									<TextBlock Text="  Ghi chú (tùy chọn)" FontSize="14" FontWeight="SemiBold" VerticalAlignment="Center"/>
-								</StackPanel>
-								<TextBox Style="{StaticResource TxtBox}" Text="{Binding Notes, UpdateSourceTrigger=PropertyChanged}"/>
-							</StackPanel>
+                    <!-- Voucher cards -->
+                    <ItemsControl ItemsSource="{Binding Vouchers}">
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate>
+                                <Border Background="White" CornerRadius="14" Margin="0,0,0,16">
+                                    <Border.Effect>
+                                        <DropShadowEffect BlurRadius="18" Opacity="0.07"
+                                                          ShadowDepth="2" Direction="270"/>
+                                    </Border.Effect>
+                                    <Grid>
+                                        <Border Width="6" HorizontalAlignment="Left"
+                                                CornerRadius="14,0,0,14">
+                                            <Border.Background>
+                                                <LinearGradientBrush StartPoint="0,0" EndPoint="0,1">
+                                                    <GradientStop Color="#6C63FF" Offset="0"/>
+                                                    <GradientStop Color="#FF9800" Offset="1"/>
+                                                </LinearGradientBrush>
+                                            </Border.Background>
+                                        </Border>
+                                        <Grid Margin="24,18,20,18">
+                                            <Grid.ColumnDefinitions>
+                                                <ColumnDefinition Width="*"/>
+                                                <ColumnDefinition Width="Auto"/>
+                                            </Grid.ColumnDefinitions>
+                                            <StackPanel>
+                                                <StackPanel Orientation="Horizontal" Margin="0,0,0,8">
+                                                    <Border Background="#EEF2FF" CornerRadius="6" Padding="12,4">
+                                                        <TextBlock Text="{Binding Code}" FontSize="16"
+                                                                   FontWeight="Bold"
+                                                                   Foreground="{StaticResource Primary}"
+                                                                   FontFamily="Consolas"/>
+                                                    </Border>
+                                                </StackPanel>
+                                                <TextBlock Text="{Binding Description}" FontSize="13"
+                                                           Foreground="{StaticResource TextDark}"
+                                                           Margin="0,0,0,8" TextWrapping="Wrap"/>
+                                                <StackPanel Orientation="Horizontal">
+                                                    <TextBlock FontSize="11" Foreground="{StaticResource TextGray}">
+                                                        <Run Text="📅 HSD: "/>
+                                                        <Run Text="{Binding ExpiryDate, StringFormat='dd/MM/yyyy',
+                                                             FallbackValue='Không giới hạn'}"/>
+                                                    </TextBlock>
+                                                    <TextBlock FontSize="11" Foreground="{StaticResource TextGray}"
+                                                               Margin="16,0,0,0">
+                                                        <Run Text="🔁 Đã dùng: "/>
+                                                        <Run Text="{Binding UsedCount}"/>
+                                                        <Run Text=" lượt"/>
+                                                    </TextBlock>
+                                                </StackPanel>
+                                            </StackPanel>
+                                            <!-- Discount badge -->
+                                            <StackPanel Grid.Column="1" VerticalAlignment="Center"
+                                                        HorizontalAlignment="Right" Margin="16,0,0,0">
+                                                <Border Background="#FFF3E0" CornerRadius="10" Padding="16,10">
+                                                    <StackPanel HorizontalAlignment="Center">
+                                                        <TextBlock Text="GIẢM" FontSize="10" FontWeight="Bold"
+                                                                   Foreground="{StaticResource Orange}"
+                                                                   HorizontalAlignment="Center"/>
+                                                        <TextBlock Text="{Binding DiscountAmount, StringFormat={}{0:N0}}"
+                                                                   FontSize="22" FontWeight="ExtraBold"
+                                                                   Foreground="{StaticResource Orange}"
+                                                                   HorizontalAlignment="Center"/>
+                                                        <TextBlock Text="đồng" FontSize="11"
+                                                                   Foreground="{StaticResource Orange}"
+                                                                   HorizontalAlignment="Center"/>
+                                                    </StackPanel>
+                                                </Border>
+                                            </StackPanel>
+                                        </Grid>
+                                    </Grid>
+                                </Border>
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                    </ItemsControl>
 
-							<StackPanel Grid.Column="4" VerticalAlignment="Center">
-								<Button Content="📅  XÁC NHẬN ĐẶT LỊCH" Style="{StaticResource BtnPrimary}" Height="46" FontSize="13" Command="{Binding BookCmd}"/>
-							</StackPanel>
-						</Grid>
-					</Border>
-				</StackPanel>
-			</ScrollViewer>
+                    <!-- Footer hint -->
+                    <Border Background="#F0F4FF" CornerRadius="10" Padding="16,12" Margin="0,8,0,0">
+                        <StackPanel Orientation="Horizontal">
+                            <TextBlock Text="💡 " FontSize="14"/>
+                            <TextBlock TextWrapping="Wrap" FontSize="12"
+                                       Foreground="{StaticResource Primary}">
+                                <Run Text="Hãy đọc mã voucher cho lễ tân khi thanh toán để được áp dụng ngay!"/>
+                            </TextBlock>
+                        </StackPanel>
+                    </Border>
+                </StackPanel>
+            </ScrollViewer>
 
-			<Grid Margin="0,64,0,0" Visibility="{Binding ShowHist, Converter={StaticResource BoolToVis}}">
-				<Border Margin="24,22,24,22" Style="{StaticResource Card}" Padding="0">
-					<Grid>
-						<Grid.RowDefinitions>
-							<RowDefinition Height="Auto"/>
-							<RowDefinition Height="*"/>
-						</Grid.RowDefinitions>
-						<Border Padding="22,14" BorderBrush="{StaticResource BorderLight}" BorderThickness="0,0,0,1">
-							<TextBlock Text="Lịch sử lịch hẹn" FontSize="14" FontWeight="SemiBold"/>
-						</Border>
-						<DataGrid Grid.Row="1" ItemsSource="{Binding AllAppts}">
-							<DataGrid.Columns>
-								<DataGridTextColumn Header="#" Binding="{Binding AppointmentId}" Width="60"/>
-								<DataGridTextColumn Header="Dịch vụ" Binding="{Binding Service.ServiceName}" Width="*"/>
-								<DataGridTextColumn Header="Thợ cắt" Binding="{Binding Barber.FullName}" Width="140"/>
-								<DataGridTextColumn Header="Thời gian" Binding="{Binding AppointmentTime, StringFormat='dd/MM/yyyy HH:mm'}" Width="150"/>
-								<DataGridTextColumn Header="Ghi chú" Binding="{Binding Notes}" Width="120"/>
-								<DataGridTemplateColumn Header="Trạng thái" Width="150">
-									<DataGridTemplateColumn.CellTemplate>
-										<DataTemplate>
-											<Border CornerRadius="12" Padding="10,4" Margin="8,6" HorizontalAlignment="Left" Background="{Binding Status, Converter={StaticResource StatusToBg}}">
-												<TextBlock Text="{Binding Status}" FontSize="11" FontWeight="SemiBold" Foreground="{Binding Status, Converter={StaticResource StatusToColor}}"/>
-											</Border>
-										</DataTemplate>
-									</DataGridTemplateColumn.CellTemplate>
-								</DataGridTemplateColumn>
-								<DataGridTemplateColumn Header="Thao tác" Width="110">
-									<DataGridTemplateColumn.CellTemplate>
-										<DataTemplate>
-											<Button Content="Hủy Lịch" Height="30" Padding="10,0" FontSize="11" Margin="6,6" Command="{Binding DataContext.CancelCmd, RelativeSource={RelativeSource AncestorType=Window}}" CommandParameter="{Binding AppointmentId}">
-												<Button.Style>
-													<Style TargetType="Button" BasedOn="{StaticResource BtnDanger}">
-														<Style.Triggers>
-															<DataTrigger Binding="{Binding Status}" Value="Đã xác nhận">
-																<Setter Property="IsEnabled" Value="False"/>
-															</DataTrigger>
-															<DataTrigger Binding="{Binding Status}" Value="Hoàn thành">
-																<Setter Property="IsEnabled" Value="False"/>
-															</DataTrigger>
-															<DataTrigger Binding="{Binding Status}" Value="Đã hủy">
-																<Setter Property="IsEnabled" Value="False"/>
-															</DataTrigger>
-														</Style.Triggers>
-													</Style>
-												</Button.Style>
-											</Button>
-										</DataTemplate>
-									</DataGridTemplateColumn.CellTemplate>
-								</DataGridTemplateColumn>
-							</DataGrid.Columns>
-						</DataGrid>
-					</Grid>
-				</Border>
-			</Grid>
-
-		</Grid>
-	</Grid>
+        </Grid>
+    </Grid>
 </Window>

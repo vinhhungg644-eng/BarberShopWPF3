@@ -1,0 +1,172 @@
+﻿<UserControl x:Class="BarberShopWPF.Views.DashboardUC"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+	<UserControl.Resources>
+		<Style x:Key="InteractiveCard" TargetType="Button">
+			<Setter Property="Background" Value="Transparent"/>
+			<Setter Property="BorderThickness" Value="0"/>
+			<Setter Property="Cursor" Value="Hand"/>
+			<Setter Property="Template">
+				<Setter.Value>
+					<ControlTemplate TargetType="Button">
+						<Border x:Name="Bd" Background="White" CornerRadius="12" Padding="20" Margin="10,0">
+							<Border.Effect>
+								<DropShadowEffect BlurRadius="16" Opacity="0.05" ShadowDepth="2" Direction="270" Color="#000000"/>
+							</Border.Effect>
+							<Border.RenderTransform>
+								<TranslateTransform x:Name="Trans" Y="0"/>
+							</Border.RenderTransform>
+							<ContentPresenter/>
+						</Border>
+						<ControlTemplate.Triggers>
+							<Trigger Property="IsMouseOver" Value="True">
+								<Setter TargetName="Bd" Property="Effect">
+									<Setter.Value>
+										<DropShadowEffect BlurRadius="25" Opacity="0.12" ShadowDepth="5" Direction="270" Color="#000000"/>
+									</Setter.Value>
+								</Setter>
+								<Trigger.EnterActions>
+									<BeginStoryboard>
+										<Storyboard>
+											<DoubleAnimation Storyboard.TargetName="Trans" Storyboard.TargetProperty="Y" To="-3" Duration="0:0:0.1"/>
+										</Storyboard>
+									</BeginStoryboard>
+								</Trigger.EnterActions>
+								<Trigger.ExitActions>
+									<BeginStoryboard>
+										<Storyboard>
+											<DoubleAnimation Storyboard.TargetName="Trans" Storyboard.TargetProperty="Y" To="0" Duration="0:0:0.1"/>
+										</Storyboard>
+									</BeginStoryboard>
+								</Trigger.ExitActions>
+							</Trigger>
+						</ControlTemplate.Triggers>
+					</ControlTemplate>
+				</Setter.Value>
+			</Setter>
+		</Style>
+	</UserControl.Resources>
+
+	<ScrollViewer Margin="30">
+		<StackPanel>
+			<TextBlock Text="Tổng quan hôm nay" FontSize="24" FontWeight="Bold" Foreground="{StaticResource TextDark}" Margin="0,0,0,25"/>
+
+			<UniformGrid Columns="3" Margin="-10,0,-10,30">
+				<Button Style="{StaticResource InteractiveCard}" Command="{Binding OpenDrawerCmd}" CommandParameter="CustomerList">
+					<StackPanel>
+						<Border Width="45" Height="45" CornerRadius="8" Background="#E8EAF6" HorizontalAlignment="Left">
+							<TextBlock Text="💰" FontSize="20" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+						</Border>
+						<TextBlock Text="Doanh thu ngày" Foreground="{StaticResource TextGray}" Margin="0,15,0,0"/>
+						<TextBlock Text="{Binding TodayRevenue}" FontSize="24" FontWeight="Bold" Margin="0,5"/>
+						<TextBlock Text="Dữ liệu thu nhập" Foreground="{StaticResource Blue}" FontSize="11"/>
+					</StackPanel>
+				</Button>
+				<Button Style="{StaticResource InteractiveCard}" Command="{Binding OpenDrawerCmd}" CommandParameter="FreeBarberList">
+					<StackPanel>
+						<Border Width="45" Height="45" CornerRadius="8" Background="#E8F5E9" HorizontalAlignment="Left">
+							<TextBlock Text="✂" FontSize="20" HorizontalAlignment="Center" VerticalAlignment="Center" Foreground="#2E7D32"/>
+						</Border>
+						<TextBlock Text="Thợ đang rảnh" Foreground="{StaticResource TextGray}" Margin="0,15,0,0"/>
+						<TextBlock Text="{Binding FreeBarberCount, StringFormat={}{0} Thợ}" FontSize="24" FontWeight="Bold" Margin="0,5"/>
+						<TextBlock Text="Xem thợ đang rảnh" Foreground="{StaticResource Green}" FontSize="11"/>
+					</StackPanel>
+				</Button>
+				<Button Style="{StaticResource InteractiveCard}" Command="{Binding OpenDrawerCmd}" CommandParameter="CustomerList">
+					<StackPanel>
+						<Border Width="45" Height="45" CornerRadius="8" Background="#FFF3E0" HorizontalAlignment="Left">
+							<TextBlock Text="👥" FontSize="20" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+						</Border>
+						<TextBlock Text="Khách hoàn thành" Foreground="{StaticResource TextGray}" Margin="0,15,0,0"/>
+						<TextBlock Text="{Binding TodayCustomerCount}" FontSize="24" FontWeight="Bold" Margin="0,5"/>
+						<TextBlock Text="Thông tin khách hàng" Foreground="{StaticResource Orange}" FontSize="11"/>
+					</StackPanel>
+				</Button>
+			</UniformGrid>
+
+			<Border Style="{StaticResource Card}">
+				<Grid>
+					<Grid.RowDefinitions>
+						<RowDefinition Height="Auto"/>
+						<RowDefinition Height="200"/>
+						<RowDefinition Height="30"/>
+					</Grid.RowDefinitions>
+					<DockPanel Grid.Row="0" Margin="0,0,0,20">
+						<TextBlock Text="Biểu đồ thống kê doanh thu" FontSize="16" FontWeight="Bold" VerticalAlignment="Center"/>
+						<ComboBox HorizontalAlignment="Right" Width="130" Height="35" VerticalContentAlignment="Center" Background="#F4F6F9" BorderThickness="0" ItemsSource="{Binding ChartPeriods}" SelectedItem="{Binding SelectedChartPeriod}"/>
+					</DockPanel>
+					<Grid Grid.Row="1">
+						<Grid.ColumnDefinitions>
+							<ColumnDefinition Width="90"/>
+							<ColumnDefinition Width="*"/>
+						</Grid.ColumnDefinitions>
+						<Grid Grid.Column="0" Margin="0,0,15,0">
+							<TextBlock Text="{Binding YMax}" VerticalAlignment="Top" HorizontalAlignment="Right" Foreground="{StaticResource TextGray}" FontSize="12"/>
+							<TextBlock Text="{Binding YMid}" VerticalAlignment="Center" HorizontalAlignment="Right" Foreground="{StaticResource TextGray}" FontSize="12"/>
+							<TextBlock Text="0 đ" VerticalAlignment="Bottom" HorizontalAlignment="Right" Foreground="{StaticResource TextGray}" FontSize="12"/>
+						</Grid>
+						<Grid Grid.Column="1">
+							<Grid>
+								<Grid.RowDefinitions>
+									<RowDefinition Height="*"/>
+									<RowDefinition Height="*"/>
+								</Grid.RowDefinitions>
+								<Border BorderBrush="{StaticResource BorderLight}" BorderThickness="0,1,0,1"/>
+								<Border Grid.Row="1" BorderBrush="{StaticResource BorderLight}" BorderThickness="0,0,0,1"/>
+							</Grid>
+							<Viewbox Stretch="Fill" Margin="0,0,22,0">
+								<Canvas Width="750" Height="160" ClipToBounds="False">
+									<Polyline Points="{Binding ChartPoints}" Stroke="{StaticResource Primary}" StrokeThickness="3" StrokeLineJoin="Round"/>
+									<ItemsControl ItemsSource="{Binding RevenueChart}">
+										<ItemsControl.ItemsPanel>
+											<ItemsPanelTemplate>
+												<Canvas/>
+											</ItemsPanelTemplate>
+										</ItemsControl.ItemsPanel>
+										<ItemsControl.ItemContainerStyle>
+											<Style TargetType="ContentPresenter">
+												<Setter Property="Canvas.Left" Value="{Binding X}"/>
+												<Setter Property="Canvas.Top" Value="{Binding Y}"/>
+											</Style>
+										</ItemsControl.ItemContainerStyle>
+										<ItemsControl.ItemTemplate>
+											<DataTemplate>
+												<Ellipse Width="12" Height="12" Fill="White" Stroke="{StaticResource Primary}" StrokeThickness="3" Margin="-6,-6,0,0" ToolTip="{Binding Amount, StringFormat={}{0:N0} đ}"/>
+											</DataTemplate>
+										</ItemsControl.ItemTemplate>
+									</ItemsControl>
+								</Canvas>
+							</Viewbox>
+						</Grid>
+					</Grid>
+					<Viewbox Grid.Row="2" Stretch="Fill" Margin="90,10,0,0">
+						<Canvas Width="750" Height="20">
+							<ItemsControl ItemsSource="{Binding RevenueChart}">
+								<ItemsControl.ItemsPanel>
+									<ItemsPanelTemplate>
+										<Canvas/>
+									</ItemsPanelTemplate>
+								</ItemsControl.ItemsPanel>
+								<ItemsControl.ItemContainerStyle>
+									<Style TargetType="ContentPresenter">
+										<Setter Property="Canvas.Left" Value="{Binding X}"/>
+										<Setter Property="Visibility" Value="{Binding ShowLabel, Converter={StaticResource BoolToVis}}"/>
+									</Style>
+								</ItemsControl.ItemContainerStyle>
+								<ItemsControl.ItemTemplate>
+									<DataTemplate>
+										<TextBlock Text="{Binding Day}" Foreground="{StaticResource TextGray}" FontSize="12">
+											<TextBlock.RenderTransform>
+												<TranslateTransform X="-15"/>
+											</TextBlock.RenderTransform>
+										</TextBlock>
+									</DataTemplate>
+								</ItemsControl.ItemTemplate>
+							</ItemsControl>
+						</Canvas>
+					</Viewbox>
+				</Grid>
+			</Border>
+		</StackPanel>
+	</ScrollViewer>
+</UserControl>

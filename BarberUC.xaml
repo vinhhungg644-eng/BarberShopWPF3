@@ -1,0 +1,63 @@
+﻿<UserControl x:Class="BarberShopWPF.Views.BarberUC"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+	<DockPanel Margin="30">
+		<Grid DockPanel.Dock="Top" Margin="0,0,0,20">
+			<TextBlock Text="Quản lý thợ cắt tóc" FontSize="24" FontWeight="Bold" VerticalAlignment="Center"/>
+			<Button Content="+ Thêm mới thợ" Style="{StaticResource BtnPrimary}" HorizontalAlignment="Right" Command="{Binding OpenDrawerCmd}" CommandParameter="BarberForm"/>
+		</Grid>
+		<DataGrid ItemsSource="{Binding Barbers}" AutoGenerateColumns="False" IsReadOnly="True">
+			<DataGrid.Columns>
+				<DataGridTextColumn Header="Họ và tên" Binding="{Binding FullName}" Width="*"/>
+				<DataGridTextColumn Header="Số điện thoại" Binding="{Binding Phone}" Width="150"/>
+				<DataGridTemplateColumn Header="Trạng thái" Width="120">
+					<DataGridTemplateColumn.CellTemplate>
+						<DataTemplate>
+							<Border CornerRadius="4" Padding="12,4" HorizontalAlignment="Left" VerticalAlignment="Center">
+								<Border.Style>
+									<Style TargetType="Border">
+										<Setter Property="Background" Value="#E8F5E9"/>
+										<Style.Triggers>
+											<DataTrigger Binding="{Binding IsBusy}" Value="True">
+												<Setter Property="Background" Value="#FFEBEE"/>
+											</DataTrigger>
+										</Style.Triggers>
+									</Style>
+								</Border.Style>
+								<TextBlock FontWeight="SemiBold" FontSize="12">
+									<TextBlock.Style>
+										<Style TargetType="TextBlock">
+											<Setter Property="Text" Value="Đang rảnh"/>
+											<Setter Property="Foreground" Value="#2E7D32"/>
+											<Style.Triggers>
+												<DataTrigger Binding="{Binding IsBusy}" Value="True">
+													<Setter Property="Text" Value="Đang bận"/>
+													<Setter Property="Foreground" Value="#C62828"/>
+												</DataTrigger>
+											</Style.Triggers>
+										</Style>
+									</TextBlock.Style>
+								</TextBlock>
+							</Border>
+						</DataTemplate>
+					</DataGridTemplateColumn.CellTemplate>
+				</DataGridTemplateColumn>
+				<DataGridTemplateColumn Header="Thao tác" Width="100">
+					<DataGridTemplateColumn.CellTemplate>
+						<DataTemplate>
+							<StackPanel Orientation="Horizontal" x:Name="ActionPanel" Opacity="0.1" HorizontalAlignment="Center">
+								<Button Content="✏️" ToolTip="Sửa" Background="Transparent" BorderThickness="0" Cursor="Hand" Margin="0,0,10,0" Command="{Binding DataContext.EditBarberCmd, RelativeSource={RelativeSource AncestorType=Window}}" CommandParameter="{Binding}"/>
+								<Button Content="🗑️" ToolTip="Xóa" Background="Transparent" BorderThickness="0" Cursor="Hand" Command="{Binding DataContext.DelBarberCmd, RelativeSource={RelativeSource AncestorType=Window}}" CommandParameter="{Binding}"/>
+							</StackPanel>
+							<DataTemplate.Triggers>
+								<DataTrigger Binding="{Binding IsMouseOver, RelativeSource={RelativeSource AncestorType=DataGridRow}}" Value="True">
+									<Setter TargetName="ActionPanel" Property="Opacity" Value="1"/>
+								</DataTrigger>
+							</DataTemplate.Triggers>
+						</DataTemplate>
+					</DataGridTemplateColumn.CellTemplate>
+				</DataGridTemplateColumn>
+			</DataGrid.Columns>
+		</DataGrid>
+	</DockPanel>
+</UserControl>

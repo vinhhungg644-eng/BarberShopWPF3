@@ -1,0 +1,240 @@
+using BarberShopApp.Models;
+using BarberShopWPF.Helpers;
+using BarberShopWPF.Views;
+using Microsoft.EntityFrameworkCore;
+using System;
+using System.Collections.Generic;
+using System.Collections.ObjectModel;
+using System.Linq;
+using System.Windows;
+using System.Windows.Input;
+
+namespace BarberShopWPF.ViewModels
+{
+	public class RevenueData { public string Day { get; set; } public double Amount { get; set; } public double X { get; set; } public double Y { get; set; } public bool ShowLabel { get; set; } }
+	public class CustomerReport { public string Name { get; set; } public string Phone { get; set; } public string Service { get; set; } public string Time { get; set; } public string Price { get; set; } }
+
+	public class AdminViewModel : BaseViewModel
+	{
+		// ─── UI STATE ──────────────────────────────────
+		private string _section = "Dashboard";
+		public string Section { get => _section; set { Set(ref _section, value); UpdateVisibility(); } }
+		private bool _isDrawerOpen;
+		public bool IsDrawerOpen { get => _isDrawerOpen; set => Set(ref _isDrawerOpen, value); }
+		private string _drawerContent;
+		public string DrawerContent { get => _drawerContent; set => Set(ref _drawerContent, value); }
+
+		public bool ShowDash => Section == "Dashboard";
+		public bool ShowSvc => Section == "Services";
+		public bool ShowBarber => Section == "Barbers";
+		public bool ShowProd => Section == "Products";
+		private void UpdateVisibility() { OnPropertyChanged(nameof(ShowDash)); OnPropertyChanged(nameof(ShowSvc)); OnPropertyChanged(nameof(ShowBarber)); OnPropertyChanged(nameof(ShowProd)); }
+
+		// ─── DASHBOARD & CHART ──────────────────────────
+		public Account CurrentAccount { get; }
+		private string _todayRevenue = "0 đ"; public string TodayRevenue { get => _todayRevenue; set => Set(ref _todayRevenue, value); }
+		private int _freeBarberCount = 0; public int FreeBarberCount { get => _freeBarberCount; set => Set(ref _freeBarberCount, value); }
+		private int _todayCustomerCount = 0; public int TodayCustomerCount { get => _todayCustomerCount; set => Set(ref _todayCustomerCount, value); }
+
+		private string _selectedChartPeriod = "1 tuần qua";
+		public string SelectedChartPeriod { get => _selectedChartPeriod; set { Set(ref _selectedChartPeriod, value); UpdateChartData(); } }
+		public ObservableCollection<string> ChartPeriods { get; } = new() { "1 tuần qua", "1 tháng qua", "1 năm qua" };
+
+		public string ChartPoints { get; set; }
+		public string YMax { get; set; }
+		public string YMid { get; set; }
+
+		public ObservableCollection<RevenueData> RevenueChart { get; set; } = new();
+		public ObservableCollection<CustomerReport> DashboardCustomerList { get; set; } = new();
+		public ObservableCollection<Barber> DashboardFreeBarberList { get; set; } = new();
+
+		// ─── COLLECTIONS & EDITING ──────────────────────
+		public ObservableCollection<Service> Services { get; set; } = new();
+		public ObservableCollection<Barber> Barbers { get; set; } = new();
+		public ObservableCollection<Product> Products { get; set; } = new();
+
+		private Service _editSvc = new(); public Service EditSvc { get => _editSvc; set => Set(ref _editSvc, value); }
+		private Barber _editBarber = new() { FullName = "" }; public Barber EditBarber { get => _editBarber; set => Set(ref _editBarber, value); }
+		private Product _editProd = new() { ProductName = "" }; public Product EditProd { get => _editProd; set => Set(ref _editProd, value); }
+
+		// ─── COMMANDS ───────────────────────────────────
+		public ICommand NavDashCmd { get; }
+		public ICommand NavSvcCmd { get; }
+		public ICommand NavBarberCmd { get; }
+		public ICommand NavProdCmd { get; }
+		public ICommand OpenDrawerCmd { get; }
+		public ICommand CloseDrawerCmd { get; }
+		public ICommand LogoutCmd { get; }
+
+		public ICommand SaveSvcCmd { get; }
+		public ICommand EditSvcCmd { get; }
+		public ICommand DelSvcCmd { get; }
+		public ICommand SaveBarberCmd { get; }
+		public ICommand EditBarberCmd { get; }
+		public ICommand DelBarberCmd { get; }
+		public ICommand SaveProdCmd { get; }
+		public ICommand EditProdCmd { get; }
+		public ICommand DelProdCmd { get; }
+
+		public AdminViewModel(Account account)
+		{
+			CurrentAccount = account;
+
+			// Fix RadioButton Menu Commands
+			NavDashCmd = new RelayCommand(() => { Section = "Dashboard"; LoadData(); });
+			NavSvcCmd = new RelayCommand(() => { Section = "Services"; LoadData(); });
+			NavBarberCmd = new RelayCommand(() => { Section = "Barbers"; LoadData(); });
+			NavProdCmd = new RelayCommand(() => { Section = "Products"; LoadData(); });
+
+			CloseDrawerCmd = new RelayCommand(_ => IsDrawerOpen = false);
+
+			OpenDrawerCmd = new RelayCommand(p => {
+				DrawerContent = p.ToString();
+				if (DrawerContent == "ServiceForm") EditSvc = new Service();
+				if (DrawerContent == "BarberForm") EditBarber = new Barber { FullName = "" };
+				if (DrawerContent == "ProductForm") EditProd = new Product { ProductName = "" };
+				IsDrawerOpen = true;
+			});
+
+			EditSvcCmd = new RelayCommand(p => { if (p is Service s) { EditSvc = CloneSvc(s); DrawerContent = "ServiceForm"; IsDrawerOpen = true; } });
+			EditBarberCmd = new RelayCommand(p => { if (p is Barber b) { EditBarber = CloneBarber(b); DrawerContent = "BarberForm"; IsDrawerOpen = true; } });
+			EditProdCmd = new RelayCommand(p => { if (p is Product pr) { EditProd = CloneProd(pr); DrawerContent = "ProductForm"; IsDrawerOpen = true; } });
+
+			SaveSvcCmd = new RelayCommand(_ => SaveSvc());
+			DelSvcCmd = new RelayCommand(p => DelSvc(p));
+			SaveBarberCmd = new RelayCommand(_ => SaveBarberAction());
+			DelBarberCmd = new RelayCommand(p => DelBarberAction(p));
+			SaveProdCmd = new RelayCommand(_ => SaveProd());
+			DelProdCmd = new RelayCommand(p => DelProd(p));
+
+			LogoutCmd = new RelayCommand(_ => { new LoginView().Show(); Application.Current.Windows.OfType<AdminView>().FirstOrDefault()?.Close(); });
+
+			LoadData();
+			LoadRealDashboardData();
+			UpdateChartData();
+		}
+
+		// ─── DATABASE LOGIC ─────────────────────────────
+		private void LoadData()
+		{
+			try
+			{
+				using var db = DbContextHelper.Create();
+				Services = new ObservableCollection<Service>(db.Services.AsNoTracking().OrderBy(x => x.ServiceName).ToList());
+				Barbers = new ObservableCollection<Barber>(db.Barbers.AsNoTracking().OrderBy(x => x.FullName).ToList());
+				Products = new ObservableCollection<Product>(db.Products.AsNoTracking().OrderBy(x => x.ProductName).ToList());
+				OnPropertyChanged(nameof(Services)); OnPropertyChanged(nameof(Barbers)); OnPropertyChanged(nameof(Products));
+			}
+			catch { }
+		}
+
+		private void LoadRealDashboardData()
+		{
+			try
+			{
+				using var db = DbContextHelper.Create();
+				var today = DateTime.Today;
+				var freeB = db.Barbers.Where(b => b.IsBusy == false || b.IsBusy == null).ToList();
+				FreeBarberCount = freeB.Count;
+				DashboardFreeBarberList.Clear(); foreach (var b in freeB) DashboardFreeBarberList.Add(b);
+
+				var bills = db.Bills.Include(b => b.Customer).Include(b => b.BillServices).ThenInclude(bs => bs.Service)
+					.Where(b => b.CreateDate != null && b.CreateDate.Value.Date == today).ToList();
+				TodayCustomerCount = bills.Count;
+				TodayRevenue = bills.Sum(b => b.TotalAmount ?? 0).ToString("N0") + " đ";
+
+				DashboardCustomerList.Clear();
+				foreach (var b in bills)
+				{
+					string sn = b.BillServices.Any() ? string.Join(", ", b.BillServices.Select(x => x.Service.ServiceName)) : "Khác";
+					DashboardCustomerList.Add(new CustomerReport { Name = b.Customer?.FullName ?? "Khách lẻ", Phone = b.Customer?.Phone ?? "---", Service = sn, Time = b.CreateDate?.ToString("HH:mm") ?? "--:--", Price = (b.TotalAmount ?? 0).ToString("N0") + " đ" });
+				}
+			}
+			catch { }
+		}
+
+		private void UpdateChartData()
+		{
+			try
+			{
+				using var db = DbContextHelper.Create();
+				var today = DateTime.Today; DateTime start; var temp = new List<RevenueData>();
+				if (SelectedChartPeriod == "1 năm qua")
+				{
+					start = new DateTime(today.Year, today.Month, 1).AddMonths(-11);
+					var b = db.Bills.Where(x => x.CreateDate >= start).ToList();
+					for (int i = 11; i >= 0; i--) { var m = today.AddMonths(-i); var t = b.Where(x => x.CreateDate.Value.Month == m.Month && x.CreateDate.Value.Year == m.Year).Sum(x => x.TotalAmount ?? 0); temp.Add(new RevenueData { Day = m.ToString("MM/yy"), Amount = (double)t, ShowLabel = true }); }
+				}
+				else if (SelectedChartPeriod == "1 tháng qua")
+				{
+					start = today.AddDays(-29); var b = db.Bills.Where(x => x.CreateDate >= start).ToList();
+					for (int i = 29; i >= 0; i--) { var d = today.AddDays(-i); var t = b.Where(x => x.CreateDate.Value.Date == d).Sum(x => x.TotalAmount ?? 0); temp.Add(new RevenueData { Day = d.ToString("dd/MM"), Amount = (double)t, ShowLabel = (i % 5 == 0) }); }
+				}
+				else
+				{
+					start = today.AddDays(-6); var b = db.Bills.Where(x => x.CreateDate >= start).ToList();
+					for (int i = 6; i >= 0; i--) { var d = today.AddDays(-i); var t = b.Where(x => x.CreateDate.Value.Date == d).Sum(x => x.TotalAmount ?? 0); temp.Add(new RevenueData { Day = d.ToString("dd/MM"), Amount = (double)t, ShowLabel = true }); }
+				}
+				double max = temp.Count > 0 ? temp.Max(x => x.Amount) : 1; if (max == 0) max = 1;
+				YMax = max.ToString("N0") + " đ"; YMid = (max / 2).ToString("N0") + " đ";
+				OnPropertyChanged(nameof(YMax)); OnPropertyChanged(nameof(YMid));
+
+				double cw = 750, ch = 160, xs = temp.Count > 1 ? cw / (temp.Count - 1) : 0;
+				string ps = ""; RevenueChart.Clear();
+				for (int i = 0; i < temp.Count; i++)
+				{
+					double tx = i * xs, ty = ch - ((temp[i].Amount / max) * ch);
+					ps += $"{tx.ToString(System.Globalization.CultureInfo.InvariantCulture)},{ty.ToString(System.Globalization.CultureInfo.InvariantCulture)} ";
+					temp[i].X = tx; temp[i].Y = ty; RevenueChart.Add(temp[i]);
+				}
+				ChartPoints = ps; OnPropertyChanged(nameof(ChartPoints));
+			}
+			catch { }
+		}
+
+		// ─── CRUD ACTIONS ───────────────────────────────
+		private void SaveSvc()
+		{
+			using var db = DbContextHelper.Create();
+			if (EditSvc.ServiceId == 0) db.Services.Add(EditSvc); else db.Services.Update(EditSvc);
+			db.SaveChanges(); LoadData(); IsDrawerOpen = false;
+		}
+		private void DelSvc(object p)
+		{
+			if (p is Service s && MessageBox.Show("Xóa dịch vụ này?", "Xác nhận", MessageBoxButton.YesNo) == MessageBoxResult.Yes)
+			{
+				using var db = DbContextHelper.Create(); var e = db.Services.Find(s.ServiceId); if (e != null) { db.Services.Remove(e); db.SaveChanges(); LoadData(); }
+			}
+		}
+		private void SaveBarberAction()
+		{
+			using var db = DbContextHelper.Create();
+			if (EditBarber.BarberId == 0) db.Barbers.Add(EditBarber); else db.Barbers.Update(EditBarber);
+			db.SaveChanges(); LoadData(); IsDrawerOpen = false;
+		}
+		private void DelBarberAction(object p)
+		{
+			if (p is Barber b && MessageBox.Show("Xóa thợ này?", "Xác nhận", MessageBoxButton.YesNo) == MessageBoxResult.Yes)
+			{
+				using var db = DbContextHelper.Create(); var e = db.Barbers.Find(b.BarberId); if (e != null) { db.Barbers.Remove(e); db.SaveChanges(); LoadData(); }
+			}
+		}
+		private void SaveProd()
+		{
+			using var db = DbContextHelper.Create();
+			if (EditProd.ProductId == 0) db.Products.Add(EditProd); else db.Products.Update(EditProd);
+			db.SaveChanges(); LoadData(); IsDrawerOpen = false;
+		}
+		private void DelProd(object p)
+		{
+			if (p is Product r && MessageBox.Show("Xóa sản phẩm này?", "Xác nhận", MessageBoxButton.YesNo) == MessageBoxResult.Yes)
+			{
+				using var db = DbContextHelper.Create(); var e = db.Products.Find(r.ProductId); if (e != null) { db.Products.Remove(e); db.SaveChanges(); LoadData(); }
+			}
+		}
+
+		private static Service CloneSvc(Service s) => new Service { ServiceId = s.ServiceId, ServiceName = s.ServiceName, Price = s.Price, DurationMinutes = s.DurationMinutes };
+		private static Barber CloneBarber(Barber b) => new Barber { BarberId = b.BarberId, FullName = b.FullName, Phone = b.Phone, IsBusy = b.IsBusy, BasicSalary = b.BasicSalary };
+		private static Product CloneProd(Product p) => new Product { ProductId = p.ProductId, ProductName = p.ProductName, Price = p.Price, Stock = p.Stock };
+	}
+}
